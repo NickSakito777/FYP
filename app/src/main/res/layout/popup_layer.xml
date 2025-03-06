@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/blue_border_background_popup"
+    android:alpha="0.75"
+    android:padding="30dp"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/popup_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="活动名称"
+        android:textStyle="bold"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/popup_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="活动内容"
+        android:textSize="14sp"
+        android:paddingTop="5dp" />
+
+    <!-- "导航" 按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/popup_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="导航"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/button_color"
+        android:elevation="6dp"
+        app:cornerRadius="8dp" /> <!-- 使用 app:cornerRadius -->
+
+    <!-- "打卡" 按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/popup_checkin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="打卡"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/button_color"
+        android:elevation="6dp"
+        app:cornerRadius="8dp" /> <!-- 使用 app:cornerRadius -->
+
+    <!-- "关闭" 按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/popup_close"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="关闭"
+        android:layout_marginTop="12dp"
+        android:padding="12dp"
+        android:backgroundTint="@color/button_color"
+        android:elevation="6dp"
+        app:cornerRadius="8dp" /> <!-- 使用 app:cornerRadius -->
+
+</LinearLayout>

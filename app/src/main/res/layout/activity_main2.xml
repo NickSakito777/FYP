@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.CartoonMapView"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 标题 TextView -->
+    <TextView
+        android:id="@+id/material_hour_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="西浦手绘地图"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:layout_marginTop="80dp"/>
+
+    <!-- 添加一个 Spacer 来创建更多的间隔 -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="40dp" /> <!-- 调整这个值来控制地图和按钮之间的距离 -->
+
+    <!-- 地图 ImageView -->
+    <com.example.lbsdemo.view.MapImageView
+        android:id="@+id/mapImageView"
+        android:layout_width="337dp"
+        android:layout_gravity="center"
+        android:layout_height="358dp"
+        android:src="@mipmap/img2"
+        android:background="#f00" />
+
+
+    <!-- 再次添加一个 Spacer 来增加按钮的上间距 -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20dp" /> <!-- 控制按钮和图片之间的间距 -->
+
+    <!-- 按钮 Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_show_map"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="查看地图"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="100dp"
+        android:backgroundTint="@color/button_color"
+        android:padding="12dp"
+        android:elevation="6dp"
+        android:textSize="18sp"
+        app:cornerRadius="8dp"/>  <!-- 只保留 app:cornerRadius -->
+    <TextView
+        android:id="@+id/location_your"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔴 您的位置"
+        android:textSize="13sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginTop="-170dp" />
+
+    <TextView
+        android:id="@+id/location_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginLeft="15dp"
+        android:text="打卡活动位置，点击图标跳转"
+        android:textColor="@color/black"
+        android:textSize="13sp" />
+    <TextView
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:background="@mipmap/marker"
+        android:layout_marginTop="-13dp"/>
+
+</LinearLayout>

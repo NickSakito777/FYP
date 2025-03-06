@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="CartoonMapView">
+        <attr name="mapSrc" format="reference" />
+    </declare-styleable>
+</resources>
