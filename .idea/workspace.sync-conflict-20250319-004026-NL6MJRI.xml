@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_agent_task.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_check_in.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main2.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main3.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_photo.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_questionnaire.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_web_view.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/content_chat.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_privacy_show.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_reset_pwd.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_task_detail.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/empty_task_view.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/float_window_tool_view.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_chat_message.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_chat_task_card.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/learn_todo_view.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/media_picker_popup.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/popup_layer.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/section_activity_preference.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/section_study_habits.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/task_item_view.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/timer_popup.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/view_typing_indicator.xml">
+        <config>
+          <theme>@style/Theme.LBSDemo</theme>
+        </config>
+      </layout>
+    </layouts>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ef6fd202-8216-49b8-a41f-50ffc323c18b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/ActivitySelection.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/ActivitySelection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/CrucialMapViewImplement.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/CrucialMapViewImplement.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/LoginActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/LoginActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/PrivacyCheck.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/PrivacyCheck.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/ProfileActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/activity/ProfileActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/map/FloatWindowManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/map/FloatWindowManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/media/PhotoActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/media/PhotoActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/AppDatabase.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/AppDatabase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/QuestionnaireActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/QuestionnaireActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/QuestionnaireData.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/QuestionnaireData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/user/UserDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/utils/GeoFenceManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/utils/GeoFenceManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/view/CartoonMapView.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/lbsdemo/view/CartoonMapView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/popup_background.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/popup_background.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_check_in.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_check_in.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_photo.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_photo.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/float_window_tool_view.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/float_window_tool_view.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/popup_layer.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/popup_layer.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/section_study_habits.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/section_study_habits.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=bf5ce6b31020)]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$/app">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LBSDemo" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LBSDemo" type="f1a62948:ProjectNode" />
+                <item name="app" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LBSDemo" type="f1a62948:ProjectNode" />
+                <item name="app" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LBSDemo" type="f1a62948:ProjectNode" />
+                <item name="app" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="valueResourceFile" />
+        <option value="resourceFile" />
+        <option value="layoutResourceFile" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;NickSakito777&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:/NickSakito777/LBSDemo.git&quot;,
+    &quot;accountId&quot;: &quot;420ae989-0f93-4938-b952-7ae3bcfcf40f&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2q3uNtv0L2GmwfroGJpJR2zcJ6w" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "DEBUGGABLE_DEVICE": "xiaomi-m2010j19sc-bf5ce6b31020",
+    "DEBUGGABLE_PROCESS": "com.example.lbsdemo",
+    "DEBUGGER_ID": "Auto",
+    "PROJECT_TRUSTED_KEY": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "SHOW_ALL_PROCESSES": "false",
+    "ScreenshotViewer.SavePath": "C:/Users/60216/Desktop",
+    "android-custom-viewD:/SharingFox/Senior/FYP/Demo2.0/Demo2.0/app/src/main/java/com/example/lbsdemo/view/MapImageView.java_SELECTED": "MapImageView",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.google.services.firebase.aqiPopupShown": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "E:/SharingFox/Senior/FYP/Demo2.0/Demo2.0/app/src/main/java",
+    "last_opened_file_path": "E:/SharingFox/Senior/FYP/Demo2.0/Demo2.0/app/src/main/java/com/example/lbsdemo/activity",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.2"
+  },
+  "keyToStringList": {
+    "GitStage.ChangesTree.GroupingKeys": [
+      "directory",
+      "module",
+      "repository"
+    ],
+    "android-custom-viewD:/SharingFox/Senior/FYP/Demo2.0/Demo2.0/app/src/main/java/com/example/lbsdemo/view/MapImageView.java_MapImageView_DIMENSIONS": [
+      "1080",
+      "1920"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\SharingFox\Senior\FYP\Demo2.0\Demo2.0\app\src\main\java\com\example\lbsdemo\activity" />
+      <recent name="E:\SharingFox\Senior\FYP\Demo2.0\Demo2.0\app\src\main\res\mipmap-xxxhdpi" />
+      <recent name="E:\SharingFox\Senior\FYP\Demo2.0\Demo2.0\app\src\main\res\drawable" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\SharingFox\Senior\FYP\Demo2.0\Demo2.0\app\src\main\java\com\example\lbsdemo\activity" />
+      <recent name="E:\SharingFox\Senior\FYP\Demo2.0\Demo2.0\app\src\main\res\layout" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.example.lbsdemo.user" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
+      <module name="LBSDemo.app.main" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ef6fd202-8216-49b8-a41f-50ffc323c18b" name="Changes" comment="" />
+      <created>1733903542525</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1733903542525</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
