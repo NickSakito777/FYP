@@ -1,11 +1,8 @@
-
 /*
 1、打开app弹出协议，禁止返回键取消显示。
 2、再次打开协议页不再弹出。
  */
 package com.example.lbsdemo.activity;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,7 +15,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.lbsdemo.R;
+import com.example.lbsdemo.map.FloatWindowManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +32,18 @@ public class PrivacyCheck extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        
+        // 隐藏浮动窗口
+        FloatWindowManager.get().hideToolView();
+        
         PravicyCheck();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 恢复浮动窗口可见性
+        FloatWindowManager.get().visibleToolView();
     }
     public void onClickAgree(View v)
     {

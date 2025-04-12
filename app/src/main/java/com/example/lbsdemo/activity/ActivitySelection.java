@@ -1,16 +1,22 @@
 package com.example.lbsdemo.activity;
 
-import static com.example.lbsdemo.activity.AgentTaskActivity.REQUEST_TASK_TIMER;
-
+import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -31,56 +37,44 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.baidu.geofence.GeoFence;
-import com.example.lbsdemo.chat.ChatMessageAdapter;  // 假设这是您的适配器类的正确路径
-// ... existing code ...
-
 import com.example.lbsdemo.R;
+import com.example.lbsdemo.chat.Character;
 import com.example.lbsdemo.chat.ChatMessage;
+import com.example.lbsdemo.chat.ChatMessageAdapter;
+import com.example.lbsdemo.llm.ImageLLMManager;
+import com.example.lbsdemo.llm.LLMManager;
+import com.example.lbsdemo.llm.TaskGenerator;
+import com.example.lbsdemo.llm.TextLLMManager;
 import com.example.lbsdemo.map.FloatWindowManager;
 import com.example.lbsdemo.task.TaskData;
 import com.example.lbsdemo.task.TaskGenerationService;
+import com.example.lbsdemo.task.TaskVerificationData;
 import com.example.lbsdemo.user.AppDatabase;
-import com.example.lbsdemo.llm.LLMManager;
-import com.example.lbsdemo.llm.ImageLLMManager;
-import com.example.lbsdemo.llm.TextLLMManager;
-import com.example.lbsdemo.llm.TaskGenerator;
+import com.example.lbsdemo.utils.GeoFenceManager;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
-
-import org.json.JSONObject;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import android.app.ProgressDialog;
-
-import com.example.lbsdemo.task.TaskVerificationData;
-
-// 添加 AgentTaskActivity 导入
-import com.example.lbsdemo.chat.Character;
-import androidx.appcompat.app.AlertDialog;
-import java.util.ArrayList;
-import android.os.CountDownTimer;
-import com.example.lbsdemo.utils.GeoFenceManager;
 //import com.google.android.gms.location.Geofence;
 
 public class ActivitySelection extends AppCompatActivity implements GeoFenceManager.OnGeoFenceStatusListener {
@@ -89,7 +83,6 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     private ViewGroup activityList;
     private String userId;
     private BroadcastReceiver taskReceiver;
-    private TextView tvResponse;
     private boolean isTaskGenerating = false; // 添加标志来跟踪任务生成状态
     private GeoFenceManager geoFenceManager; // 添加地理围栏管理器
     private BroadcastReceiver geoFenceReceiver; // 添加地理围栏广播接收器
@@ -153,6 +146,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     private Runnable taskLocationChecker;
     private static final int TASK_LOCATION_CHECK_INTERVAL = 10000; // 10秒检查一次位置
     private static final int REQUEST_TASK_TIMER = 5;
+    private int taskIdToShowCompletionMessages = -1; // <-- 1. Add member variable
 
     // 在类的开头添加常量定义
     public static final String TASK_TYPE_DAILY = "daily_task";
@@ -164,15 +158,17 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_in);
         
-        // 检查是否有任务完成状态传入
+        // --- 2. Modify onCreate --- 
         Intent intent = getIntent();
         if (intent != null && intent.getBooleanExtra("task_completed", false)) {
             int taskId = intent.getIntExtra("task_id", -1);
             if (taskId != -1) {
-                // 标记任务为已完成
-                markAgentTaskAsCompleted(taskId);
+                 this.taskIdToShowCompletionMessages = taskId; // Store task ID
+                 updateTaskStatusInBackground(taskId); // Only update DB status here
+                 // Removed call to markAgentTaskAsCompleted(taskId);
             }
         }
+        // --- End Modify onCreate ---
 
         activityList = findViewById(R.id.activityList);
         //tvResponse = findViewById(R.id.tv_response);
@@ -255,6 +251,26 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         // 注册位置广播接收器
         registerLocationReceiver();
     }
+
+    // --- 3. Create updateTaskStatusInBackground --- 
+    private void updateTaskStatusInBackground(int taskId) {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            AppDatabase database = AppDatabase.getInstance(getApplicationContext()); 
+            if (database == null) {
+                 Log.e("ActivitySelection", "[updateTaskStatusInBackground] Database instance is null!");
+                 return;
+            }
+             TaskData task = database.taskDao().getTaskById(taskId);
+             if (task != null) {
+                 task.isCompleted = true;
+                 database.taskDao().updateTask(task);
+                 Log.d("ActivitySelection", "[updateTaskStatusInBackground] Task status updated for taskId: " + taskId);
+             } else {
+                 Log.w("ActivitySelection", "[updateTaskStatusInBackground] Task not found for ID: " + taskId);
+             }
+        });
+    }
+    // --- End Create updateTaskStatusInBackground --- 
 
     // 这里删除了addAgentTaskButtonToPage2方法
 
@@ -378,7 +394,9 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         };
         // 注册广播接收器
         IntentFilter filter = new IntentFilter(TaskGenerationService.ACTION_TASK_GENERATED);
-        registerReceiver(taskReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(taskReceiver, filter, RECEIVER_NOT_EXPORTED);
+        }
     }
 
     // 注册地理围栏广播接收器
@@ -391,7 +409,9 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
                 }
             }
         };
-        registerReceiver(geoFenceReceiver, new IntentFilter(GeoFenceManager.GEOFENCE_BROADCAST_ACTION));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(geoFenceReceiver, new IntentFilter(GeoFenceManager.GEOFENCE_BROADCAST_ACTION), RECEIVER_NOT_EXPORTED);
+        }
     }
 
     // 实现 OnGeoFenceStatusListener 接口方法
@@ -1112,29 +1132,37 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
 
         // 使用Room数据库异步加载聊天记录
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(this);
-            List<ChatMessage> messages = db.chatMessageDao().getRecentMessagesByUserId(userId, 50);
+            AppDatabase dbInstance = AppDatabase.getInstance(getApplicationContext());
+            if (dbInstance == null) {
+                 Log.e("ActivitySelection", "[loadChatHistory] Database instance is null!");
+                 return;
+            }
+            List<ChatMessage> messages = dbInstance.chatMessageDao().getRecentMessagesByUserId(userId, 50);
 
-            // 在UI线程更新RecyclerView
             runOnUiThread(() -> {
                 if (chatAdapter != null) {
-                    // 清空现有消息避免重复
-                    chatAdapter.clearMessages();
+                    chatAdapter.clearMessages(); 
 
-                    // 添加所有历史记录
+                    // Add historical messages
                     for (ChatMessage message : messages) {
                         chatAdapter.addMessage(message);
                     }
 
-                    // 如果没有历史消息，显示欢迎消息
-                    if (messages.isEmpty()) {
+                    // Check and add completion messages if needed
+                    if (taskIdToShowCompletionMessages != -1) {
+                        addCompletionMessagesToChat(taskIdToShowCompletionMessages);
+                        taskIdToShowCompletionMessages = -1; // Reset after adding
+                    }
+
+                    // Add welcome message if no history and no completion messages were just added
+                    if (chatAdapter.getItemCount() == 0) { 
                         ChatMessage welcomeMessage = new ChatMessage(userId, "assistant", "传讯已建立，双面镜已唤醒，密探暗影。这里是信使Zero。霍格沃兹我们需要您协助调查校园内的黑雾组织活动。请随时准备接收密令。");
                         welcomeMessage.senderName = "特工Zero";
                         chatAdapter.addMessage(welcomeMessage);
-                        saveChatMessageToDatabase(welcomeMessage); // 保存欢迎消息到数据库
+                        saveChatMessageToDatabase(welcomeMessage);
                     }
 
-                    // 滚动到底部（使用非平滑滚动，立即显示底部）
+                    // Scroll to bottom after all messages are potentially added
                     if (chatAdapter.getItemCount() > 0) {
                         scrollChatToBottom(false);
                     }
@@ -2142,62 +2170,63 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
      * 拍照前检查位置
      */
     private void checkLocationBeforeCapture() {
-        // 如果任务没有特定位置要求，直接进行拍照
-        if (currentVerificationTask.latitude == null || currentVerificationTask.longitude == null) {
+        // 如果任务没有特定位置要求(positionID=0)，直接进行拍照
+        if (currentVerificationTask == null || currentVerificationTask.positionID == 0) {
             launchVerificationCamera();
             return;
         }
 
-        // 获取当前位置
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager != null) {
-            try {
-                // 检查位置权限
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
+        // 1. 获取当前位置的 customId
+        String currentCumId = getSharedPreferences("location_prefs", MODE_PRIVATE)
+                .getString("current_cum_id", "");
+        Log.d("GeoFenceCheckCapture", "[checkLocationBeforeCapture] 读取到的 current_cum_id: " + currentCumId); // <-- 添加日志
+        Log.d("GeoFenceCheckCapture", "当前Geofence位置ID: " + currentCumId);
 
-                    // 获取最后已知位置
-                    Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (lastKnownLocation != null) {
-                        // 检查用户是否在任务要求的位置附近
-                        float[] results = new float[1];
-                        Location.distanceBetween(
-                                lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(),
-                                currentVerificationTask.latitude, currentVerificationTask.longitude,
-                                results);
-
-                        // 设置可接受的距离范围（米）
-                        float acceptableDistance = currentVerificationTask.radius != null
-                                ? currentVerificationTask.radius : 100;
-
-                        if (results[0] <= acceptableDistance) {
-                            // 用户在要求位置，允许拍照
-                            launchVerificationCamera();
-                        } else {
-                            // 用户不在要求位置，显示提示
-                            Toast.makeText(this,
-                                    "请先前往任务要求的位置: " + currentVerificationTask.location,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // 无法获取位置，提示用户
-                        Toast.makeText(this,
-                                "无法获取当前位置，请确保GPS已开启",
-                                Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    // 请求位置权限
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSION_REQUEST_LOCATION);
-                }
-            } catch (Exception e) {
-                // 处理异常
-                Toast.makeText(this,
-                        "位置验证失败: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
-                Log.e("ActivitySelection", "位置验证错误", e);
+        // 2. 从任务位置提取要求的教学楼 ID
+        String taskLocation = currentVerificationTask.location.toUpperCase();
+        String requiredLocationId = "";
+        String[] allBuildingCodes = {"SB", "CB", "SD", "FB", "SC", "SA", "PB", "MA", "MB", "EB", "EE"};
+        for (String code : allBuildingCodes) {
+            if (taskLocation.contains(code + "楼") || taskLocation.contains(code + " ") || taskLocation.endsWith(code)) {
+                requiredLocationId = code;
+                break;
             }
+        }
+        if (requiredLocationId.isEmpty()){
+             for (String code : allBuildingCodes) {
+                 if (taskLocation.contains(code)) {
+                     requiredLocationId = code;
+                     break;
+                 }
+             }
+        }
+        Log.d("GeoFenceCheckCapture", "任务要求位置ID: " + requiredLocationId);
+
+        // 3. 比较 ID
+        if (!requiredLocationId.isEmpty() && requiredLocationId.equals(currentCumId)) {
+            // 位置匹配，允许拍照
+            launchVerificationCamera();
+        } else {
+            // 位置不匹配或无法获取当前位置
+            String message;
+            if (currentCumId.isEmpty()) {
+                message = "无法确认当前位置，请确保您已进入教学楼区域并等待片刻。任务地点：" + currentVerificationTask.location + " (" + requiredLocationId + ")";
+            } else {
+                message = "您当前在 " + currentCumId + " 楼，不在拍照任务要求的教学楼 (" + requiredLocationId + ")，请前往: " + currentVerificationTask.location;
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+            // 显示导航选项对话框
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("拍照位置不符");
+            builder.setMessage("您需要前往 " + currentVerificationTask.location + " (" + requiredLocationId + ") 才能进行拍照验证。是否现在导航到该位置？");
+            builder.setPositiveButton("导航", (dialog, which) -> {
+                navigateToMapWithLocation(currentVerificationTask);
+            });
+            builder.setNegativeButton("稍后", (dialog, which) -> {
+                dialog.dismiss();
+            });
+            builder.create().show();
         }
     }
 
@@ -2205,62 +2234,63 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
      * 从图库选择前检查位置
      */
     private void checkLocationBeforeGallery() {
-        // 如果任务没有特定位置要求，直接进行图库选择
-        if (currentVerificationTask.latitude == null || currentVerificationTask.longitude == null) {
+        // 如果任务没有特定位置要求(positionID=0)，直接进行图库选择
+        if (currentVerificationTask == null || currentVerificationTask.positionID == 0) {
             openVerificationGallery();
             return;
         }
 
-        // 获取当前位置
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager != null) {
-            try {
-                // 检查位置权限
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
+        // 1. 获取当前位置的 customId
+        String currentCumId = getSharedPreferences("location_prefs", MODE_PRIVATE)
+                .getString("current_cum_id", "");
+        Log.d("GeoFenceCheckGallery", "[checkLocationBeforeGallery] 读取到的 current_cum_id: " + currentCumId); // <-- 添加日志
+        Log.d("GeoFenceCheckGallery", "当前Geofence位置ID: " + currentCumId);
 
-                    // 获取最后已知位置
-                    Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (lastKnownLocation != null) {
-                        // 检查用户是否在任务要求的位置附近
-                        float[] results = new float[1];
-                        Location.distanceBetween(
-                                lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(),
-                                currentVerificationTask.latitude, currentVerificationTask.longitude,
-                                results);
-
-                        // 设置可接受的距离范围（米）
-                        float acceptableDistance = currentVerificationTask.radius != null
-                                ? currentVerificationTask.radius : 100;
-
-                        if (results[0] <= acceptableDistance) {
-                            // 用户在要求位置，允许选择图片
-                            openVerificationGallery();
-                        } else {
-                            // 用户不在要求位置，显示提示
-                            Toast.makeText(this,
-                                    "请先前往任务要求的位置: " + currentVerificationTask.location,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // 无法获取位置，提示用户
-                        Toast.makeText(this,
-                                "无法获取当前位置，请确保GPS已开启",
-                                Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    // 请求位置权限
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSION_REQUEST_LOCATION);
-                }
-            } catch (Exception e) {
-                // 处理异常
-                Toast.makeText(this,
-                        "位置验证失败: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
-                Log.e("ActivitySelection", "位置验证错误", e);
+        // 2. 从任务位置提取要求的教学楼 ID
+        String taskLocation = currentVerificationTask.location.toUpperCase();
+        String requiredLocationId = "";
+        String[] allBuildingCodes = {"SB", "CB", "SD", "FB", "SC", "SA", "PB", "MA", "MB", "EB", "EE"};
+        for (String code : allBuildingCodes) {
+            if (taskLocation.contains(code + "楼") || taskLocation.contains(code + " ") || taskLocation.endsWith(code)) {
+                requiredLocationId = code;
+                break;
             }
+        }
+        if (requiredLocationId.isEmpty()){
+             for (String code : allBuildingCodes) {
+                 if (taskLocation.contains(code)) {
+                     requiredLocationId = code;
+                     break;
+                 }
+             }
+        }
+        Log.d("GeoFenceCheckGallery", "任务要求位置ID: " + requiredLocationId);
+
+        // 3. 比较 ID
+        if (!requiredLocationId.isEmpty() && requiredLocationId.equals(currentCumId)) {
+            // 位置匹配，允许选择图片
+            openVerificationGallery();
+        } else {
+            // 位置不匹配或无法获取当前位置
+            String message;
+            if (currentCumId.isEmpty()) {
+                message = "无法确认当前位置，请确保您已进入教学楼区域并等待片刻。任务地点：" + currentVerificationTask.location + " (" + requiredLocationId + ")";
+            } else {
+                message = "您当前在 " + currentCumId + " 楼，不在图库验证任务要求的教学楼 (" + requiredLocationId + ")，请前往: " + currentVerificationTask.location;
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+            // 显示导航选项对话框
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("图库选择位置不符");
+            builder.setMessage("您需要前往 " + currentVerificationTask.location + " (" + requiredLocationId + ") 才能使用图库照片进行验证。是否现在导航到该位置？");
+            builder.setPositiveButton("导航", (dialog, which) -> {
+                navigateToMapWithLocation(currentVerificationTask);
+            });
+            builder.setNegativeButton("稍后", (dialog, which) -> {
+                dialog.dismiss();
+            });
+            builder.create().show();
         }
     }
 
@@ -2981,17 +3011,17 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
 
             // ===================== 开发模式开关 START =====================
             // 要恢复正常的位置验证，只需注释掉下面这行代码
-            boolean devMode = true;  // 设置为 true 允许在任何位置验证
-            // ===================== 开发模式开关 END =====================
+            // boolean devMode = false;  // 设置为 true 允许在任何位置验证
+            // // ===================== 开发模式开关 END =====================
 
-            if (devMode) {
-                // 开发模式：跳过位置验证，直接允许拍照
-                Log.d("LocationCheck", "开发模式：跳过位置验证，允许在任何位置拍照");
-                //Toast.makeText(this, "开发模式：允许拍照验证", Toast.LENGTH_SHORT).show();
-                currentVerificationTask = task;
-                showPhotoVerificationOptions();
-                return;
-            }
+//            if (devMode) {
+//                // 开发模式：跳过位置验证，直接允许拍照
+//                Log.d("LocationCheck", "开发模式：跳过位置验证，允许在任何位置拍照");
+//                //Toast.makeText(this, "开发模式：允许拍照验证", Toast.LENGTH_SHORT).show();
+//                currentVerificationTask = task;
+//                showPhotoVerificationOptions();
+//                return;
+//            }
 
             // 正常的位置验证逻辑
             if (locationId.equals(currentCumId) && !currentCumId.isEmpty()) {
@@ -3008,17 +3038,14 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
                 
                 // 显示导航选项对话框
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("位置提示");
-                builder.setMessage("您需要前往 " + task.location + " 才能完成任务验证。是否现在导航到该位置？");
-                
+                builder.setTitle("拍照位置不符");
+                builder.setMessage("您需要前往 " + task.location + " (" + locationId + ") 才能进行拍照验证。是否现在导航到该位置？");
                 builder.setPositiveButton("导航", (dialog, which) -> {
                     navigateToMapWithLocation(task);
                 });
-                
                 builder.setNegativeButton("稍后", (dialog, which) -> {
                     dialog.dismiss();
                 });
-                
                 builder.create().show();
             }
         } else if ("time".equals(task.verificationMethod)) {
@@ -3026,115 +3053,149 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
             Toast.makeText(this, "需要在指定位置停留" + task.durationMinutes + "分钟", Toast.LENGTH_SHORT).show();
             markAgentTaskAsCompleted(task.id);
         } else if ("time+geofence".equals(task.verificationMethod)) {
-            // ===================== 开发模式开关 START =====================
-            // 该段代码仅用于开发调试，上线前必须注释掉！
-            boolean devMode = true;  // 设置为 true 允许立即完成任务
-            if (devMode) {
-                // 立即完成任务
-                AppDatabase.databaseWriteExecutor.execute(() -> {
-                    // 更新任务状态为已完成
-                    task.isCompleted = true;
-                    db.taskDao().updateTask(task);
+            // // ===================== 开发模式开关 START =====================
+            // // 该段代码仅用于开发调试，上线前必须注释掉！
+            // boolean devMode = false;  // 设置为 true 允许立即完成任务
+            // if (devMode) {
+            //     // 立即完成任务
+            //     AppDatabase.databaseWriteExecutor.execute(() -> {
+            //         // 更新任务状态为已完成
+            //         task.isCompleted = true;
+            //         db.taskDao().updateTask(task);
 
-                    // 创建验证数据
-                    TaskVerificationData verificationData = new TaskVerificationData();
-                    verificationData.taskId = task.id;
-                    verificationData.userId = userId;
-                    verificationData.verificationType = "time+geofence";
-                    verificationData.verificationData = "在" + task.location + "停留了" + task.durationMinutes + "分钟";
-                    verificationData.verificationResult = true;
-                    verificationData.confidence = 100;
-                    verificationData.verificationStatus = "completed";
-                    verificationData.timestamp = System.currentTimeMillis();
+            //         // 创建验证数据
+            //         TaskVerificationData verificationData = new TaskVerificationData();
+            //         verificationData.taskId = task.id;
+            //         verificationData.userId = userId;
+            //         verificationData.verificationType = "time+geofence";
+            //         verificationData.verificationData = "在" + task.location + "停留了" + task.durationMinutes + "分钟";
+            //         verificationData.verificationResult = true;
+            //         verificationData.confidence = 100;
+            //         verificationData.verificationStatus = "completed";
+            //         verificationData.timestamp = System.currentTimeMillis();
 
-                    // 保存验证数据
-                    db.taskVerificationDao().insertVerification(verificationData);
+            //         // 保存验证数据
+            //         db.taskVerificationDao().insertVerification(verificationData);
 
-                    // 在UI线程处理后续操作
-                    runOnUiThread(() -> {
-                        //Toast.makeText(ActivitySelection.this, "开发模式：任务已立即完成", Toast.LENGTH_SHORT).show();
+            //         // 在UI线程处理后续操作
+            //         runOnUiThread(() -> {
+            //             //Toast.makeText(ActivitySelection.this, "开发模式：任务已立即完成", Toast.LENGTH_SHORT).show();
                         
-                        // 添加系统消息到聊天
-                        ChatMessage systemMessage = new ChatMessage();
-                        systemMessage.userId = userId;
-                        systemMessage.role = "system";
-                        systemMessage.content = "任务已完成: " + task.title;
-                        systemMessage.messageType = "system";
-                        systemMessage.timestamp = System.currentTimeMillis();
-                        chatAdapter.addMessage(systemMessage);
-                        saveChatMessageToDatabase(systemMessage);
+            //             // 添加系统消息到聊天
+            //             ChatMessage systemMessage = new ChatMessage();
+            //             systemMessage.userId = userId;
+            //             systemMessage.role = "system";
+            //             systemMessage.content = "任务已完成: " + task.title;
+            //             systemMessage.messageType = "system";
+            //             systemMessage.timestamp = System.currentTimeMillis();
+            //             chatAdapter.addMessage(systemMessage);
+            //             saveChatMessageToDatabase(systemMessage);
 
-                        // 添加特工Zero的表扬消息
-                        ChatMessage agentMessage = new ChatMessage();
-                        agentMessage.userId = userId;
-                        agentMessage.role = "assistant";
-                        agentMessage.content = "做得好，夜鸦！你成功完成了密令，守护了霍格沃兹。" + generateRandomCompliment();
-                        agentMessage.senderName = "Zero";
-                        agentMessage.timestamp = System.currentTimeMillis();
-                        chatAdapter.addMessage(agentMessage);
-                        saveChatMessageToDatabase(agentMessage);
+            //             // 添加特工Zero的表扬消息
+            //             ChatMessage agentMessage = new ChatMessage();
+            //             agentMessage.userId = userId;
+            //             agentMessage.role = "assistant";
+            //             agentMessage.content = "做得好，夜鸦！你成功完成了密令，守护了霍格沃兹。" + generateRandomCompliment();
+            //             agentMessage.senderName = "Zero";
+            //             agentMessage.timestamp = System.currentTimeMillis();
+            //             chatAdapter.addMessage(agentMessage);
+            //             saveChatMessageToDatabase(agentMessage);
 
-                        // 启动下一阶段任务
-                        moveToNextAgentStage();
+            //             // 启动下一阶段任务
+            //             moveToNextAgentStage();
 
-                        // 跳转到地图
-                        showTaskLocationOnMap(task);
-                    });
-                });
-                return;
-            }
-            // ===================== 开发模式开关 END =====================
+            //             // 跳转到地图
+            //             showTaskLocationOnMap(task);
+            //         });
+            //     });
+            //     return;
+            // }
+            // // ===================== 开发模式开关 END =====================
 
             // 正常的任务验证逻辑
-            // 立即将任务标记为已完成
-            AppDatabase.databaseWriteExecutor.execute(() -> {
-                // 更新任务状态为已完成
-                task.isCompleted = true;
-                db.taskDao().updateTask(task);
-
-                // 创建验证数据
-                TaskVerificationData verificationData = new TaskVerificationData();
-                verificationData.taskId = task.id;
-                verificationData.userId = userId;
-                verificationData.verificationType = "time+geofence";
-                verificationData.verificationData = "在" + task.location + "停留了" + task.durationMinutes + "分钟";
-                verificationData.verificationResult = true;
-                verificationData.confidence = 100;
-                verificationData.verificationStatus = "completed";
-                verificationData.timestamp = System.currentTimeMillis();
-
-                // 保存验证数据
-                db.taskVerificationDao().insertVerification(verificationData);
-
-                // 在UI线程处理后续操作
-                runOnUiThread(() -> {
-                    // 添加系统消息到聊天
-                    ChatMessage systemMessage = new ChatMessage();
-                    systemMessage.userId = userId;
-                    systemMessage.role = "system";
-                    systemMessage.content = "任务已完成: " + task.title;
-                    systemMessage.messageType = "system";
-                    systemMessage.timestamp = System.currentTimeMillis();
-                    chatAdapter.addMessage(systemMessage);
-                    saveChatMessageToDatabase(systemMessage);
-
-                    // 添加特工Zero的表扬消息
-                    ChatMessage agentMessage = new ChatMessage();
-                    agentMessage.userId = userId;
-                    agentMessage.role = "assistant";
-                    agentMessage.content = "做得好，夜鸦！你成功完成了密令，守护了霍格沃兹。" + generateRandomCompliment();
-                    agentMessage.senderName = "Zero";
-                    agentMessage.timestamp = System.currentTimeMillis();
-                    chatAdapter.addMessage(agentMessage);
-                    saveChatMessageToDatabase(agentMessage);
-
-                    // 启动下一阶段任务
-                    moveToNextAgentStage();
-
-                    // 跳转到地图
+            // 检查用户是否在任务位置
+            checkIfUserInTaskLocation(task, isInLocation -> {
+                if (isInLocation) {
+                    // 用户在位置内，启动计时器
+                    startTimerForTask(task);
+                    // 导航到地图页面
                     showTaskLocationOnMap(task);
-                });
+                } else {
+                    // 用户不在位置内，显示提示
+                    Toast.makeText(this, "请先前往任务指定地点：" + task.location, Toast.LENGTH_LONG).show();
+                    // 显示导航选项对话框
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("位置提示");
+                    builder.setMessage("您需要前往 " + task.location + " 才能开始任务计时。是否现在导航到该位置？");
+                    builder.setPositiveButton("导航", (dialog, which) -> {
+                        navigateToMapWithLocation(task);
+                    });
+                    builder.setNegativeButton("稍后", (dialog, which) -> {
+                        dialog.dismiss();
+                    });
+                    builder.create().show();
+                }
             });
+        } else if ("time+geofence".equals(task.verificationMethod)) {
+            // // ===================== 开发模式开关 START =====================
+            // // ... (保留开发模式代码的注释)
+            // // ===================== 开发模式开关 END =====================
+
+            // --- Start: Copied logic from checkLocationBeforeCapture --- 
+            // 1. 获取当前位置的 customId
+            String currentCumId = getSharedPreferences("location_prefs", MODE_PRIVATE)
+                    .getString("current_cum_id", "");
+            Log.d("GeoFenceCheck", "[verifyAgentTask - Copied Logic] 读取到的 current_cum_id: " + currentCumId);
+
+            // 2. 从任务位置提取要求的教学楼 ID (使用 'task' 变量)
+            String taskLocation = task.location.toUpperCase();
+            String requiredLocationId = "";
+            String[] allBuildingCodes = {"SB", "CB", "SD", "FB", "SC", "SA", "PB", "MA", "MB", "EB", "EE"};
+            for (String code : allBuildingCodes) {
+                if (taskLocation.contains(code + "楼") || taskLocation.contains(code + " ") || taskLocation.endsWith(code)) {
+                    requiredLocationId = code;
+                    break;
+                }
+            }
+            if (requiredLocationId.isEmpty()){
+                 for (String code : allBuildingCodes) {
+                     if (taskLocation.contains(code)) {
+                         requiredLocationId = code;
+                         break;
+                     }
+                 }
+            }
+            Log.d("GeoFenceCheck", "[verifyAgentTask - Copied Logic] 任务要求位置ID: " + requiredLocationId);
+
+            // 3. 比较 ID
+            if (!requiredLocationId.isEmpty() && requiredLocationId.equals(currentCumId)) {
+                // 位置匹配成功: 用户在正确的教学楼内
+                Toast.makeText(this, "位置确认 ("+ requiredLocationId +")，开始任务计时", Toast.LENGTH_SHORT).show();
+                startTimerForTask(task);
+                showTaskLocationOnMap(task);
+            } else {
+                // 位置不匹配或无法获取当前位置
+                String message;
+                if (currentCumId.isEmpty()) {
+                    message = "无法确认当前位置，请确保您已进入教学楼区域并等待片刻。任务地点：" + task.location + " (" + requiredLocationId + ")";
+                } else {
+                    message = "您当前在 " + currentCumId + " 楼，不在任务要求的教学楼 (" + requiredLocationId + ")，请前往: " + task.location;
+                }
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+                // 显示导航选项对话框
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("位置不符");
+                builder.setMessage("您需要前往 " + task.location + " (" + requiredLocationId + ") 才能开始任务计时。是否现在导航到该位置？");
+                builder.setPositiveButton("导航", (dialog, which) -> {
+                    navigateToMapWithLocation(task); // 使用 'task' 变量
+                });
+                builder.setNegativeButton("稍后", (dialog, which) -> {
+                    dialog.dismiss();
+                });
+                builder.create().show();
+            }
+             // --- End: Copied logic --- 
         } else {
             // 其他验证方式
             Toast.makeText(this, "未知验证方式: " + task.verificationMethod, Toast.LENGTH_SHORT).show();
@@ -3535,14 +3596,22 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
      */
     private void markAgentTaskAsCompleted(int taskId) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            // 获取任务
-            TaskData task = db.taskDao().getTaskById(taskId);
+            // Get a fresh instance inside the background thread using application context
+            AppDatabase database = AppDatabase.getInstance(getApplicationContext()); 
+            if (database == null) {
+                 Log.e("ActivitySelection", "Database instance is null in background thread!");
+                 return; // Cannot proceed without database
+            }
+            // Get task
+            // TaskData task = db.taskDao().getTaskById(taskId); // Use the instance obtained within the lambda
+            TaskData task = database.taskDao().getTaskById(taskId); 
             if (task != null) {
-                // 更新任务状态
+                // Update task status
                 task.isCompleted = true;
-                db.taskDao().updateTask(task);
+                // db.taskDao().updateTask(task); // Use the instance obtained within the lambda
+                database.taskDao().updateTask(task); 
 
-                // 在UI线程显示任务完成消息
+                // 在UI线程添加完成消息到聊天
                 runOnUiThread(() -> {
                     // 添加系统消息到聊天
                     ChatMessage systemMessage = new ChatMessage();
@@ -4164,7 +4233,68 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
 
         // 注册广播接收器
         IntentFilter filter = new IntentFilter(GeoFenceManager.GEOFENCE_BROADCAST_ACTION);
-        registerReceiver(locationReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(locationReceiver, filter, RECEIVER_NOT_EXPORTED);
+        }
         Log.d("LocationReceiver", "位置广播接收器已注册");
     }
+
+    // --- 4. Create addCompletionMessagesToChat --- 
+    private void addCompletionMessagesToChat(int taskId) {
+        AppDatabase database = AppDatabase.getInstance(getApplicationContext());
+        if (database == null) { 
+            Log.e("ActivitySelection", "[addCompletionMessagesToChat] Database instance is null!");
+            return; 
+        }
+
+        TaskData task = database.taskDao().getTaskById(taskId); 
+        if (task == null) {
+             Log.e("ActivitySelection", "[addCompletionMessagesToChat] Cannot find task with ID " + taskId);
+             return;
+        }
+
+        Log.d("ActivitySelection", "[addCompletionMessagesToChat] Adding messages for taskId: " + taskId);
+
+        // Add system message
+        ChatMessage systemMessage = new ChatMessage();
+        systemMessage.userId = userId;
+        systemMessage.role = "system";
+        systemMessage.content = "任务已完成: " + task.title;
+        systemMessage.messageType = "system";
+        systemMessage.timestamp = System.currentTimeMillis();
+        chatAdapter.addMessage(systemMessage);
+        saveChatMessageToDatabase(systemMessage);
+
+        // Add agent message
+        ChatMessage agentMessage = new ChatMessage();
+        agentMessage.userId = userId;
+        agentMessage.role = "assistant";
+        agentMessage.content = "做得好，夜鸦！你成功完成了密令，守护了霍格沃兹。" + generateRandomCompliment();
+        agentMessage.senderName = "Zero"; // Assuming Zero for agent tasks
+        agentMessage.timestamp = System.currentTimeMillis();
+        chatAdapter.addMessage(agentMessage);
+        saveChatMessageToDatabase(agentMessage);
+
+        // Add next stage message/button if applicable
+        if (isLastTaskInStage(task)) { 
+            ChatMessage nextStageMessage = new ChatMessage();
+            nextStageMessage.userId = userId;
+            nextStageMessage.role = "assistant";
+            nextStageMessage.content = "所有阶段任务已完成。准备好接受下一阶段的挑战了吗？";
+            nextStageMessage.senderName = "信使Zero"; 
+            nextStageMessage.timestamp = System.currentTimeMillis();
+            chatAdapter.addMessage(nextStageMessage);
+            saveChatMessageToDatabase(nextStageMessage);
+
+            ChatMessage buttonMessage = new ChatMessage();
+            buttonMessage.userId = userId;
+            buttonMessage.role = "system";
+            buttonMessage.content = "";
+            buttonMessage.messageType = "next_stage_button";
+            buttonMessage.timestamp = System.currentTimeMillis();
+            chatAdapter.addMessage(buttonMessage);
+            saveChatMessageToDatabase(buttonMessage);
+        }
+    }
+    // --- End Create addCompletionMessagesToChat --- 
 }

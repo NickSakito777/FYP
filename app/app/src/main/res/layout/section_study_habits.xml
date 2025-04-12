@@ -1,0 +1,313 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginBottom="24dp"> <!-- 增大整体边距 -->
+
+    <!-- 问题1标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="二、学习习惯评估"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp"/> <!-- 标题下方留白 -->
+
+    <!-- 问题1描述 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="你通常每天安排多少时间用于课堂外学习？"
+        android:layout_marginBottom="8dp"/> <!-- 问题下方留白 -->
+
+    <!-- 学习时长单选组 -->
+    <RadioGroup
+        android:id="@+id/rgStudyDuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp"> <!-- 区块下方留白 [^5] -->
+
+        <RadioButton
+            android:id="@+id/rbLessThan1h"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="&lt;1小时"/>
+
+        <RadioButton
+            android:id="@+id/rb1to2h"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1-2小时"/>
+
+        <RadioButton
+            android:id="@+id/rb3to4h"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="3-4小时"/>
+
+        <RadioButton
+            android:id="@+id/rbMoreThan4h"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=">4小时"/>
+    </RadioGroup>
+
+    <!-- 问题2标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="偏好哪种学习场景？（多选）"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 学习场景多选组 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 第一行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"> <!-- 行间距调整 [^19] -->
+
+            <CheckBox
+                android:id="@+id/cbLibrary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="图书馆"/>
+
+            <CheckBox
+                android:id="@+id/cbClassroomLounge"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="教学楼"/>
+        </LinearLayout>
+
+        <!-- 第二行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbCafe"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="咖啡厅"/>-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbDorm"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="宿舍"/>-->
+        </LinearLayout>
+    </LinearLayout>
+    <!-- 新课表选择模块 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="你上课和自习的教学楼是？（多选）"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:id="@+id/buildingCheckboxContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 第一行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <CheckBox
+                android:id="@+id/cbFB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="FB"/>
+
+            <CheckBox
+                android:id="@+id/cbCB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="CB"/>
+
+            <CheckBox
+                android:id="@+id/cbSA"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="SA"/>
+
+            <CheckBox
+                android:id="@+id/cbSB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="SB"/>
+        </LinearLayout>
+
+        <!-- 第二行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <CheckBox
+                android:id="@+id/cbSC"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="SC"/>
+
+            <CheckBox
+                android:id="@+id/cbSD"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="SD"/>
+
+            <CheckBox
+                android:id="@+id/cbEE"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="EE"/>
+
+            <CheckBox
+                android:id="@+id/cbEB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="EB"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <CheckBox
+                android:id="@+id/cbPB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="PB"/>
+
+            <CheckBox
+                android:id="@+id/cbMA"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="MA"/>
+
+            <CheckBox
+                android:id="@+id/cbMB"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="MB"/>
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbAS"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="AS"/>-->
+            <View
+                android:id="@+id/placeholder"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:layout_marginBottom="8dp">-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbIR"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="IR"/>-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbBS"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="BS"/>-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbIA"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="IA"/>-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbHS"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="ES"/>-->
+<!--        </LinearLayout>-->
+<!--        &lt;!&ndash; 最后一行（处理不对称数量） &ndash;&gt;-->
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbDB"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="DB" />-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbES"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="ES"/>-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/cbGYM"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="GYM"/>-->
+<!--            <View-->
+<!--                android:id="@+id/placeholder"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_weight="1"/>-->
+<!--        </LinearLayout>-->
+    </LinearLayout>
+
+
+</LinearLayout>

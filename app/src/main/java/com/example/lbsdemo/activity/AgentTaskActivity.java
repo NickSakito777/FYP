@@ -16,10 +16,10 @@ import com.example.lbsdemo.R;
 import com.example.lbsdemo.chat.Character;
 import com.example.lbsdemo.llm.TaskGenerator;
 import com.example.lbsdemo.task.TaskData;
-import com.example.lbsdemo.user.AppDatabase;
-import com.example.lbsdemo.user.UserViewModel;
 import com.example.lbsdemo.task.TaskVerificationData;
 import com.example.lbsdemo.task.TaskVerificationManager;
+import com.example.lbsdemo.user.AppDatabase;
+import com.example.lbsdemo.user.UserViewModel;
 
 /**
  * 特工任务活动

@@ -1,8 +1,9 @@
 package com.example.lbsdemo.map;
 
 import android.app.Application;
-import com.baidu.mapapi.SDKInitializer;
+
 import com.baidu.mapapi.CoordType;
+import com.baidu.mapapi.SDKInitializer;
 //用于初始化百度地图api服务，虽然在第三层main函数已经
 public class BaiduInitialization extends Application {
     public static Application application;

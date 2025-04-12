@@ -19,5 +19,7 @@
     <color name="lime">#FF00FF00</color>
     <color name="button_color">#2196F3</color>
     <color name="background_light">#F5F5F5</color>
+    <color name="user_message_background">#BBDEFB</color>
+    <color name="assistant_message_background">#EEEEEE</color>
 
 </resources>

@@ -1,4 +1,3 @@
-
 package com.example.lbsdemo.user;
 
 import androidx.room.ColumnInfo;
@@ -35,6 +34,22 @@ public class QuestionnaireData {
 
     @ColumnInfo(name = "task_time_windows")
     public String taskTimeWindows;  // 对应"接受新任务时段"
+
+    // 添加缺少的字段
+    @ColumnInfo(name = "study_interests")
+    public String studyInterests;  // 学习兴趣
+
+    @ColumnInfo(name = "extracurricular_interests")
+    public String extracurricularInterests;  // 课外兴趣
+
+    @ColumnInfo(name = "frequent_places")
+    public String frequentPlaces;  // 常去地点
+
+    @ColumnInfo(name = "schedule")
+    public String schedule;  // 课表
+
+    @ColumnInfo(name = "available_time")
+    public String availableTime;  // 可用时间
 }
 
 

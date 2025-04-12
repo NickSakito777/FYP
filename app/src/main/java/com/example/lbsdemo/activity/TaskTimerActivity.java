@@ -1,5 +1,6 @@
 package com.example.lbsdemo.activity;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +14,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,17 +28,15 @@ import androidx.core.content.ContextCompat;
 import com.example.lbsdemo.R;
 import com.example.lbsdemo.task.TaskData;
 import com.example.lbsdemo.task.TaskVerificationData;
+import com.example.lbsdemo.task.TaskVerificationManager;
 import com.example.lbsdemo.user.AppDatabase;
 import com.example.lbsdemo.user.LocationHistoryData;
 import com.example.lbsdemo.utils.GeoFenceManager;
-import com.example.lbsdemo.task.TaskVerificationManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Executors;
-
-import android.Manifest;
 
 /**
  * 任务计时器活动，用于支持time+geofence组合验证

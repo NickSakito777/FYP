@@ -25,4 +25,18 @@ public class User {
         this.username = username;
         this.password = password;
     }
+
+    /**
+     * 获取用户ID
+     */
+    public String getUserId() {
+        return studentId;
+    }
+
+    /**
+     * 获取用户名
+     */
+    public String getUsername() {
+        return username;
+    }
 }

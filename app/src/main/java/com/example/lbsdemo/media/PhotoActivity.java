@@ -34,6 +34,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.util.Log;
 
 import com.example.lbsdemo.R;
 
@@ -51,6 +52,8 @@ import java.util.Date;
 import java.util.List;
 //拍照的实现：
 public class PhotoActivity extends AppCompatActivity {
+
+    private static final String TAG = "PhotoActivity";
 
     TextureView mPreviewview;
     ImageView capturedImageView;
@@ -85,24 +88,40 @@ public class PhotoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume called");
         startCameraThread();
-
-        if (!mPreviewview.isActivated()) {
-            mPreviewview.setSurfaceTextureListener(mTextureListener);
+        if (mPreviewview.isAvailable()) {
+            Log.d(TAG, "TextureView already available, setting up camera.");
+            try {
+                setupCamera(mPreviewview.getWidth(), mPreviewview.getHeight());
+                openCamera();
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "Error setting up camera onResume", e);
+            }
         } else {
-            startPreview();
+            Log.d(TAG, "TextureView not available, setting listener.");
+            mPreviewview.setSurfaceTextureListener(mTextureListener);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause called");
+        closeCamera();
+        stopCameraThread();
+        super.onPause();
     }
 
     TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
+            Log.d(TAG, "onSurfaceTextureAvailable: width=" + width + ", height=" + height);
             try {
                 setupCamera(width, height);
+                openCamera();
             } catch (CameraAccessException e) {
-                throw new RuntimeException(e);
+                Log.e(TAG, "Error setting up camera onSurfaceTextureAvailable", e);
             }
-            openCamera();
         }
 
         @Override
@@ -173,73 +192,137 @@ public class PhotoActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-        // 动态权限请求
-        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-        List<String> requestList = new ArrayList<>();
-        for (String p : permissions) {
-            if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
-                requestList.add(p);
-            }
-        }
-        if (!requestList.isEmpty()) {
-            requestPermissions(requestList.toArray(new String[0]), 1);
+        Log.d(TAG, "Attempting to open camera...");
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Log.w(TAG, "Camera permission not granted when trying to open camera.");
+            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             return;
         }
 
         try {
+            if (manager == null) {
+                Log.e(TAG, "CameraManager is null, cannot open camera.");
+                return;
+            }
+            if (mCameraId == null) {
+                Log.e(TAG, "mCameraId is null, cannot open camera. Setup might have failed.");
+                if(mPreviewview.isAvailable()) {
+                    setupCamera(mPreviewview.getWidth(), mPreviewview.getHeight());
+                    if(mCameraId == null) {
+                        Log.e(TAG, "Still no camera ID after re-setup attempt.");
+                        Toast.makeText(this, "无法找到相机设备", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } else {
+                    Log.e(TAG, "TextureView not available for camera re-setup.");
+                    return;
+                }
+            }
+            Log.d(TAG, "Opening camera: " + mCameraId);
             manager.openCamera(mCameraId, mStateCallback, mCameraHandler);
         } catch (CameraAccessException e) {
-            throw new RuntimeException(e);
+            Log.e(TAG, "CameraAccessException opening camera: " + mCameraId, e);
+            runOnUiThread(() -> Toast.makeText(this, "无法访问相机", Toast.LENGTH_SHORT).show());
+        } catch (Exception e) {
+            Log.e(TAG, "Exception opening camera: " + mCameraId, e);
+            runOnUiThread(() -> Toast.makeText(this, "打开相机时出错", Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult: requestCode=" + requestCode);
+        if (requestCode == 1) {
+            boolean allGranted = true;
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted) {
+                Log.d(TAG, "All permissions granted. Opening camera.");
+                if (mPreviewview.isAvailable()) {
+                    openCamera();
+                } else {
+                    Log.w(TAG, "Permissions granted, but TextureView not available yet.");
+                }
+            } else {
+                Log.w(TAG, "Permissions not granted.");
+                Toast.makeText(this, "需要相机和存储权限才能拍照", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
+            Log.d(TAG, "CameraDevice.onOpened");
             mCameraDevice = camera;
             startPreview();
         }
 
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {
-            mCameraDevice.close();
-            mCameraDevice = null;
+            Log.w(TAG, "CameraDevice.onDisconnected");
+            closeCamera();
         }
 
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
-            mCameraDevice.close();
-            mCameraDevice = null;
+            Log.e(TAG, "CameraDevice.onError: " + error);
+            runOnUiThread(() -> Toast.makeText(PhotoActivity.this, "相机错误: " + error, Toast.LENGTH_LONG).show());
+            closeCamera();
         }
     };
 
     private void startPreview() {
+        Log.d(TAG, "startPreview called");
+        if (mCameraDevice == null || !mPreviewview.isAvailable() || mPreviewSize == null) {
+            Log.e(TAG, "startPreview preconditions not met: mCameraDevice=" + mCameraDevice +
+                  ", isAvailable=" + mPreviewview.isAvailable() + ", mPreviewSize=" + mPreviewSize);
+            return;
+        }
+
         SurfaceTexture mSurfaceTexture = mPreviewview.getSurfaceTexture();
         mSurfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
         Surface previewSurface = new Surface(mSurfaceTexture);
         try {
+            Log.d(TAG, "Creating capture request builder for preview.");
             mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mCaptureRequestBuilder.addTarget(previewSurface);
 
+            Log.d(TAG, "Creating capture session.");
             mCameraDevice.createCaptureSession(Arrays.asList(previewSurface, mimageReader.getSurface()), new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
-                    mCaptureRequest = mCaptureRequestBuilder.build();
+                    Log.d(TAG, "CameraCaptureSession.onConfigured");
+                    if (mCameraDevice == null) return;
+
                     mCameraCaptureSession = session;
                     try {
+                        mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                        mCaptureRequest = mCaptureRequestBuilder.build();
+                        Log.d(TAG, "Setting repeating request for preview.");
                         mCameraCaptureSession.setRepeatingRequest(mCaptureRequest, null, mCameraHandler);
                     } catch (CameraAccessException e) {
-                        throw new RuntimeException(e);
+                        Log.e(TAG, "CameraAccessException setting repeating request", e);
+                        runOnUiThread(()->Toast.makeText(PhotoActivity.this, "启动预览失败", Toast.LENGTH_SHORT).show());
+                    } catch (IllegalStateException e){
+                        Log.e(TAG, "IllegalStateException setting repeating request", e);
                     }
                 }
 
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
+                    Log.e(TAG, "CameraCaptureSession.onConfigureFailed");
+                    runOnUiThread(()->Toast.makeText(PhotoActivity.this, "相机配置失败", Toast.LENGTH_SHORT).show());
                 }
             }, mCameraHandler);
         } catch (CameraAccessException e) {
-            throw new RuntimeException(e);
+            Log.e(TAG, "CameraAccessException creating capture session", e);
+            runOnUiThread(()->Toast.makeText(PhotoActivity.this, "创建相机捕捉会话失败", Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -302,7 +385,6 @@ public class PhotoActivity extends AppCompatActivity {
             Uri imageUri = null;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10及以上使用MediaStore
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
@@ -324,7 +406,6 @@ public class PhotoActivity extends AppCompatActivity {
                 }
 
             } else {
-                // Android 9及以下使用传统方式
                 File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
                 File cameraDir = new File(dcimDir, "CameraV2");
                 if (!cameraDir.exists()) {
@@ -341,7 +422,6 @@ public class PhotoActivity extends AppCompatActivity {
             }
 
             if (imageUri != null) {
-                // 更新 UI 显示拍摄的照片
                 final Uri finalImageUri = imageUri;
                 ((PhotoActivity) mContext).runOnUiThread(new Runnable() {
                     @Override
@@ -349,11 +429,43 @@ public class PhotoActivity extends AppCompatActivity {
                         PhotoActivity activity = (PhotoActivity) mContext;
                         activity.capturedImageView.setImageURI(finalImageUri);
                         activity.capturedImageView.setVisibility(View.VISIBLE);
-                        activity.findViewById(R.id.capturedCardView).setVisibility(View.VISIBLE); // 显示 CardView
+                        activity.findViewById(R.id.capturedCardView).setVisibility(View.VISIBLE);
                     }
                 });
             }
         }
 
+    }
+
+    private void closeCamera() {
+        Log.d(TAG, "closeCamera called");
+        if (mCameraCaptureSession != null) {
+            mCameraCaptureSession.close();
+            mCameraCaptureSession = null;
+        }
+        if (mCameraDevice != null) {
+            mCameraDevice.close();
+            mCameraDevice = null;
+        }
+        if (mimageReader != null) {
+            mimageReader.close();
+            mimageReader = null;
+        }
+        Log.d(TAG, "Camera resources closed.");
+    }
+
+    private void stopCameraThread() {
+        Log.d(TAG, "stopCameraThread called");
+        if (mHandlerThread != null) {
+            mHandlerThread.quitSafely();
+            try {
+                mHandlerThread.join();
+                mHandlerThread = null;
+                mCameraHandler = null;
+                Log.d(TAG, "Camera thread stopped.");
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Error stopping camera thread", e);
+            }
+        }
     }
 }

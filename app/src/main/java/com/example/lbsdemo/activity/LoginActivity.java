@@ -8,13 +8,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.lbsdemo.R;
 import com.example.lbsdemo.user.AppDatabase;
 import com.example.lbsdemo.user.QuestionnaireActivity;
 import com.example.lbsdemo.user.User;
-import com.example.lbsdemo.view.CartoonMapView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -182,6 +183,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void navigateToMap() {
 //        startActivity(new Intent(this, CartoonMapView.class));
+
         startActivity(new Intent(this,CrucialMapViewImplement.class));
         finish();
     }
@@ -201,5 +203,11 @@ public class LoginActivity extends AppCompatActivity {
         ((EditText)findViewById(R.id.etStudentId)).setText("");
         etUsername.setText("");
         etPassword.setText("");
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 登录界面不需要处理浮动窗口的隐藏/显示
+        // FloatWindowManager.get().visibleToolView();
     }
 }

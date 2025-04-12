@@ -22,8 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lbsdemo.R;
 import com.example.lbsdemo.llm.LLMManager;
-import com.example.lbsdemo.user.AppDatabase;
 import com.example.lbsdemo.task.TaskData;
+import com.example.lbsdemo.user.AppDatabase;
 
 import java.util.ArrayList;
 import java.util.List;

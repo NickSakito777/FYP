@@ -177,8 +177,8 @@ public class TaskGenerator {
             // 构建提示词
             // 准备可用位置列表
             List<String> availableLocations = new ArrayList<>();
-            if (userData.frequentPlaces != null && !userData.frequentPlaces.isEmpty()) {
-                String[] places = userData.frequentPlaces.split(",");
+            if (userData.buildingPreferences != null && !userData.buildingPreferences.isEmpty()) {
+                String[] places = userData.buildingPreferences.split(",");
                 for (String place : places) {
                     availableLocations.add(place.trim());
                 }
@@ -190,8 +190,8 @@ public class TaskGenerator {
             
             // 准备可用时间段列表
             List<String> availableTimeSlots = new ArrayList<>();
-            if (userData.availableTime != null && !userData.availableTime.isEmpty()) {
-                String[] times = userData.availableTime.split(",");
+            if (userData.taskTimeWindows != null && !userData.taskTimeWindows.isEmpty()) {
+                String[] times = userData.taskTimeWindows.split(",");
                 for (String time : times) {
                     availableTimeSlots.add(time.trim());
                 }

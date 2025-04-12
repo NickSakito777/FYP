@@ -18,17 +18,14 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lbsdemo.R;
-import com.example.lbsdemo.task.TaskData;
-import com.example.lbsdemo.user.AppDatabase;
 import com.example.lbsdemo.activity.ActivitySelection;
+import com.example.lbsdemo.task.TaskData;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import android.content.SharedPreferences;
 
 /**
  * 聊天消息适配器
