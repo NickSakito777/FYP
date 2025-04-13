@@ -62,6 +62,7 @@ import com.example.lbsdemo.task.TaskGenerationService;
 import com.example.lbsdemo.task.TaskVerificationData;
 import com.example.lbsdemo.user.AppDatabase;
 import com.example.lbsdemo.utils.GeoFenceManager;
+import com.example.lbsdemo.task.MissionLogAdapter;
 
 import org.json.JSONObject;
 
@@ -154,6 +155,9 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     public static final String TASK_TYPE_DAILY = "daily_task";
     public static final String TASK_TYPE_AGENT = "agent_task";
     public static final String EXTRA_TASK_TYPE = "task_type";
+
+    private MissionLogAdapter missionLogAdapter; // 新增成员变量
+    private RecyclerView missionLogRecyclerView; // 新增成员变量，用于方便访问
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -2841,6 +2845,18 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
             Button btnStartTask = agentTaskView.findViewById(R.id.btn_start_task);
             Button btnNextStage = agentTaskView.findViewById(R.id.btn_next_stage);
 
+            // 初始化任务日志 RecyclerView
+            missionLogRecyclerView = agentTaskView.findViewById(R.id.rv_mission_log); // 获取 RecyclerView
+            if (missionLogRecyclerView != null) {
+                 missionLogAdapter = new MissionLogAdapter(); // 创建 Adapter
+                 missionLogRecyclerView.setLayoutManager(new LinearLayoutManager(this)); // 设置 LayoutManager
+                 missionLogRecyclerView.setAdapter(missionLogAdapter); // 设置 Adapter
+                 Log.d("ActivitySelection", "MissionLog RecyclerView 初始化完成");
+            } else {
+                 Log.e("ActivitySelection", "找不到 rv_mission_log RecyclerView");
+            }
+
+
             // 获取当前用户ID - 使用类成员变量
             String characterId = "agent_zero";
 
@@ -2852,6 +2868,10 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
             Log.d("ActivitySelection", "开始加载当前任务");
             loadCurrentAgentTask(userId, characterId, tvTaskTitle, tvTaskDescription, tvTaskLocation, btnStartTask, btnNextStage);
 
+            // 加载已完成的任务日志
+            Log.d("ActivitySelection", "开始加载任务日志");
+            loadCompletedAgentMissions(userId, characterId); // 调用新方法加载日志
+
             // 设置按钮点击事件
             btnStartTask.setOnClickListener(v -> startAgentTask(userId, characterId));
             btnNextStage.setOnClickListener(v -> moveToNextAgentStage(userId, characterId));
@@ -2860,6 +2880,35 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
             Log.e("ActivitySelection", "加载特工任务内容失败: " + e.getMessage(), e);
             Toast.makeText(this, "加载任务内容失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * 加载已完成的特工任务日志
+     */
+    private void loadCompletedAgentMissions(String userId, String characterId) {
+        if (missionLogAdapter == null) {
+            Log.e("ActivitySelection", "[loadCompletedAgentMissions] missionLogAdapter 为 null");
+            return;
+        }
+         Log.d("ActivitySelection", "[loadCompletedAgentMissions] 开始加载已完成的任务 (userId=" + userId + ", characterId=" + characterId + ")");
+
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            // 从数据库获取指定用户和角色的已完成任务，按时间戳升序排序（旧 -> 新）
+            List<TaskData> completedTasks = db.taskDao().getCompletedTasksByUserIdAndCharacterId(userId, characterId);
+
+             Log.d("ActivitySelection", "[loadCompletedAgentMissions] 从数据库查询到 " + (completedTasks == null ? 0 : completedTasks.size()) + " 个已完成任务");
+
+            // 在UI线程更新Adapter
+            runOnUiThread(() -> {
+                 Log.d("ActivitySelection", "[loadCompletedAgentMissions] 在UI线程更新Adapter");
+                 missionLogAdapter.setLogs(completedTasks);
+                 // 可以选择滚动到底部，显示最新的日志
+                 if (missionLogRecyclerView != null && missionLogAdapter.getItemCount() > 0) {
+                      missionLogRecyclerView.scrollToPosition(missionLogAdapter.getItemCount() - 1);
+                      Log.d("ActivitySelection", "[loadCompletedAgentMissions] RecyclerView 滚动到底部");
+                 }
+            });
+        });
     }
 
     /**

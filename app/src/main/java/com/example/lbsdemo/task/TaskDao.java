@@ -143,4 +143,13 @@ public interface TaskDao {
      */
     @Query("SELECT * FROM daily_tasks WHERE user_id = :userId")
     List<TaskData> getTasksByUserId(String userId);
+
+    /**
+     * 获取用户特定角色的所有已完成任务
+     * @param userId 用户ID
+     * @param characterId 虚拟角色ID
+     * @return 该角色已完成的任务列表
+     */
+    @Query("SELECT * FROM daily_tasks WHERE user_id = :userId AND character_id = :characterId AND is_completed = 1 ORDER BY creation_timestamp ASC")
+    List<TaskData> getCompletedTasksByUserIdAndCharacterId(String userId, String characterId);
 }
