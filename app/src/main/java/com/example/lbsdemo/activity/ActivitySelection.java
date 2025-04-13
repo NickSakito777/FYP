@@ -816,7 +816,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     @Override
     protected void onResume() {
         super.onResume();
-
+        FloatWindowManager.get().hideToolView();
         // 在页面恢复时再次检查按钮状态
         checkButtonDisabledState();
 
