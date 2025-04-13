@@ -494,10 +494,13 @@ public class TaskGenerator {
      * 解析特工任务响应
      */
     private TaskData parseAgentTaskResponse(String llmResponse, String userId, String characterId, int stage) {
+        Log.d(TAG, "收到的原始 LLM 响应 (特工任务): " + llmResponse);
+
         try {
             // 提取JSON格式内容
             JSONObject taskObj = extractJsonObjectFromResponse(llmResponse);
             if (taskObj == null) {
+                Log.e(TAG, "无法从响应中提取有效的 JSON 对象");
                 return null;
             }
             
@@ -507,13 +510,11 @@ public class TaskGenerator {
             agentTask.title = taskObj.getString("title");
             agentTask.description = taskObj.getString("description");
             
-            // 获取位置并检查是否包含教学楼代码
+            // 获取位置并检查/添加教学楼代码 (保留原有逻辑)
             String location = taskObj.getString("location");
             String[] buildingCodes = {"SB", "CB", "SD", "FB", "SC", "SA", "PB", "MA", "MB", "EB", "EE"};
             boolean containsCode = false;
             String detectedCode = null;
-            
-            // 检查是否包含任何教学楼代码
             for (String code : buildingCodes) {
                 if (location.contains(code)) {
                     containsCode = true;
@@ -522,78 +523,66 @@ public class TaskGenerator {
                     break;
                 }
             }
-            
-            // 如果位置不包含任何教学楼代码，添加一个随机代码
             if (!containsCode) {
-                // 使用更好的随机数生成方式
-                // 使用纳秒级时间戳+任务标题哈希值作为随机种子，确保更好的随机性
                 long seed = System.nanoTime() + taskObj.getString("title").hashCode();
                 Random random = new Random(seed);
-                
-                // 打乱建筑代码数组顺序
                 List<String> buildingCodeList = new ArrayList<>(Arrays.asList(buildingCodes));
                 Collections.shuffle(buildingCodeList, random);
-                
-                // 选择第一个元素（已随机打乱）
                 String randomCode = buildingCodeList.get(0);
-                
-                // 修改格式，使教学楼代码更明显
                 location = randomCode + "楼: " + location;
                 Log.d(TAG, "位置不包含教学楼代码，已添加随机代码: " + randomCode);
             } else if (detectedCode != null) {
-                // 即使已经包含代码，也调整格式使其更明显，避免重复
-                // 首先检查是否已经是"XX楼:"格式
                 String pattern = detectedCode + "楼:";
                 if (!location.contains(pattern)) {
-                    // 移除可能的旧代码，避免重复
                     String cleanLocation = location.replace("(" + detectedCode + "楼)", "").trim();
                     cleanLocation = cleanLocation.replace(detectedCode + "楼", "").trim();
-                    // 重新设置为统一格式
                     location = detectedCode + "楼: " + cleanLocation;
                     Log.d(TAG, "优化了位置格式，突出教学楼代码: " + detectedCode);
                 }
             }
-            
-            // 添加随机的具体位置信息，使任务更加多样化
             String[] locationDetails = {
                 "教室", "走廊", "实验室", "自习室", "会议室", "演讲厅", 
                 "一楼大厅", "二楼电梯旁", "三楼休息区", "四楼研讨室"
             };
-            
-            // 使用更好的随机数生成，避免连续调用时生成相同的随机位置
             long detailSeed = System.nanoTime() + location.hashCode();
             Random detailRandom = new Random(detailSeed);
             String randomDetail = locationDetails[detailRandom.nextInt(locationDetails.length)];
-            
-            // 检查是否已经包含了详细位置信息，避免重复
             if (!location.contains(randomDetail)) {
                 location += " " + randomDetail;
             }
-            
             agentTask.location = location;
             
-            // 获取和设置任务类型，默认为关键行动任务
+            // 获取任务类型 (仍然可以获取用于其他逻辑)
             String taskType = taskObj.optString("agent_task_type", "crucial_action");
             agentTask.agentTaskType = taskType;
 
-            // 根据任务类型设置不同的验证方式
-            if ("crucial_action".equals(taskType)) {
-                // 关键行动任务: 设置为time验证 + geofence验证
-                agentTask.verificationMethod = "time+geofence"; // 组合验证
-                agentTask.positionID = 1; // 必须设置地理位置验证
-            } else if ("support".equals(taskType)) {
-                // 支援任务: 设置为photo验证，无地理位置要求
-                agentTask.verificationMethod = "photo"; // 仅拍照验证
-                agentTask.positionID = 0; // 无需地理位置验证
-            } else {
-                // 如果没有指定或无效类型，使用LLM返回的验证方法
+            // --- 修改验证方式设置逻辑 --- 
+            // 优先检查LLM是否指定了 verification_method
+            if (taskObj.has("verification_method")) {
                 agentTask.verificationMethod = taskObj.getString("verification_method");
-                agentTask.positionID = 1; // 默认需要位置验证
+                Log.d(TAG, "使用LLM指定的验证方式: " + agentTask.verificationMethod);
+                // 根据LLM指定的验证方式设置positionID
+                if ("photo".equals(agentTask.verificationMethod)) {
+                    agentTask.positionID = 0; // 拍照通常不需要精确位置
+                } else {
+                    agentTask.positionID = 1; // 其他默认需要位置
+                }
+            } else {
+                // 如果LLM没有指定，再根据 taskType 设置默认值
+                Log.d(TAG, "LLM未指定验证方式，根据agent_task_type ('" + taskType + "')设置默认值");
+                if ("support".equals(taskType)) {
+                    agentTask.verificationMethod = "photo";
+                    agentTask.positionID = 0;
+                } else { // 默认为 crucial_action 或其他类型
+                    agentTask.verificationMethod = "time+geofence";
+                    agentTask.positionID = 1;
+                }
             }
+            // --- 结束修改 --- 
 
-            agentTask.photoVerificationPrompt = taskObj.getString("photo_verification_prompt");
-            agentTask.durationMinutes = taskObj.getInt("duration_minutes");
-            agentTask.storylineContext = taskObj.getString("storyline_context");
+            agentTask.photoVerificationPrompt = taskObj.optString("photo_verification_prompt", ""); // 使用 optString 避免崩溃
+            agentTask.durationMinutes = taskObj.optInt("duration_minutes", 0); // 使用 optInt
+            agentTask.storylineContext = taskObj.optString("storyline_context", ""); // 使用 optString
             
             // 设置任务类型和状态
             agentTask.taskType = "main"; // 主线任务

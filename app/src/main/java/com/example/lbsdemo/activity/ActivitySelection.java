@@ -91,6 +91,8 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     // 定义常量
     private static final String PREF_BUTTON_DISABLED = "button_disabled";
     private static final String PREF_BUTTON_DISABLED_UNTIL = "button_disabled_until";
+    private static final String AGENT_PREFS_NAME = "agent_prefs";
+    private static final String KEY_AGENT_CURRENT_STAGE = "agent_current_stage";
 
     // 侧边栏按钮和内容区域
     private Button sidebarBtn1, sidebarBtn2, sidebarBtn3;
@@ -127,7 +129,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
 
     private TaskGenerator taskGenerator;
     private String characterId = "agent_zero"; // 特工Zero的角色ID
-    private int currentAgentStage = 1; // 当前特工任务阶段
+    private int currentAgentStage = 1; // 当前特工任务阶段 (will be loaded from prefs)
 
     // 任务计时器相关变量
     private View taskTimerCardView;
@@ -250,6 +252,12 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
 
         // 注册位置广播接收器
         registerLocationReceiver();
+
+        // --- Load Agent Stage from SharedPreferences ---
+        SharedPreferences agentPrefs = getSharedPreferences(AGENT_PREFS_NAME, MODE_PRIVATE);
+        currentAgentStage = agentPrefs.getInt(KEY_AGENT_CURRENT_STAGE, 1); // Default to 1 if not found
+        Log.d("ActivitySelection", "[onCreate] Loaded currentAgentStage from prefs: " + currentAgentStage);
+        // --- End Loading Agent Stage ---
     }
 
     // --- 3. Create updateTaskStatusInBackground --- 
@@ -2180,6 +2188,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     private void checkLocationBeforeCapture() {
         // 如果任务没有特定位置要求(positionID=0)，直接进行拍照
         if (currentVerificationTask == null || currentVerificationTask.positionID == 0) {
+            Log.d("LocationReceiver", "[checkLocationBeforeCapture] No location required (positionID=0 or task is null). Launching camera."); // New Log
             launchVerificationCamera();
             return;
         }
@@ -2187,8 +2196,8 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         // 1. 获取当前位置的 customId
         String currentCumId = getSharedPreferences("location_prefs", MODE_PRIVATE)
                 .getString("current_cum_id", "");
-        Log.d("GeoFenceCheckCapture", "[checkLocationBeforeCapture] 读取到的 current_cum_id: " + currentCumId); // <-- 添加日志
-        Log.d("GeoFenceCheckCapture", "当前Geofence位置ID: " + currentCumId);
+        Log.d("LocationReceiver", "[checkLocationBeforeCapture] Read current_cum_id from prefs: '" + currentCumId + "'"); // New Log
+        //Log.d("GeoFenceCheckCapture", "当前Geofence位置ID: " + currentCumId); // Keep original or remove
 
         // 2. 从任务位置提取要求的教学楼 ID
         String taskLocation = currentVerificationTask.location.toUpperCase();
@@ -2208,14 +2217,18 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
                  }
              }
         }
-        Log.d("GeoFenceCheckCapture", "任务要求位置ID: " + requiredLocationId);
+        Log.d("LocationReceiver", "[checkLocationBeforeCapture] Task location: '" + currentVerificationTask.location + "', Extracted requiredLocationId: '" + requiredLocationId + "'"); // New Log
+        //Log.d("GeoFenceCheckCapture", "任务要求位置ID: " + requiredLocationId); // Keep original or remove
 
         // 3. 比较 ID
+        Log.d("LocationReceiver", "[checkLocationBeforeCapture] Comparing: required='" + requiredLocationId + "' vs current='" + currentCumId + "'"); // New Log
         if (!requiredLocationId.isEmpty() && requiredLocationId.equals(currentCumId)) {
             // 位置匹配，允许拍照
+            Log.d("LocationReceiver", "[checkLocationBeforeCapture] Location MATCH. Launching camera."); // New Log
             launchVerificationCamera();
         } else {
             // 位置不匹配或无法获取当前位置
+            Log.d("LocationReceiver", "[checkLocationBeforeCapture] Location MISMATCH or currentCumId empty."); // New Log
             String message;
             if (currentCumId.isEmpty()) {
                 message = "无法确认当前位置，请确保您已进入教学楼区域并等待片刻。任务地点：" + currentVerificationTask.location + " (" + requiredLocationId + ")";
@@ -2244,6 +2257,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
     private void checkLocationBeforeGallery() {
         // 如果任务没有特定位置要求(positionID=0)，直接进行图库选择
         if (currentVerificationTask == null || currentVerificationTask.positionID == 0) {
+            Log.d("LocationReceiver", "[checkLocationBeforeGallery] No location required (positionID=0 or task is null). Opening gallery."); // New Log
             openVerificationGallery();
             return;
         }
@@ -2251,8 +2265,8 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         // 1. 获取当前位置的 customId
         String currentCumId = getSharedPreferences("location_prefs", MODE_PRIVATE)
                 .getString("current_cum_id", "");
-        Log.d("GeoFenceCheckGallery", "[checkLocationBeforeGallery] 读取到的 current_cum_id: " + currentCumId); // <-- 添加日志
-        Log.d("GeoFenceCheckGallery", "当前Geofence位置ID: " + currentCumId);
+        Log.d("LocationReceiver", "[checkLocationBeforeGallery] Read current_cum_id from prefs: '" + currentCumId + "'"); // New Log
+        //Log.d("GeoFenceCheckGallery", "当前Geofence位置ID: " + currentCumId);
 
         // 2. 从任务位置提取要求的教学楼 ID
         String taskLocation = currentVerificationTask.location.toUpperCase();
@@ -2272,14 +2286,18 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
                  }
              }
         }
-        Log.d("GeoFenceCheckGallery", "任务要求位置ID: " + requiredLocationId);
+        Log.d("LocationReceiver", "[checkLocationBeforeGallery] Task location: '" + currentVerificationTask.location + "', Extracted requiredLocationId: '" + requiredLocationId + "'"); // New Log
+        //Log.d("GeoFenceCheckGallery", "任务要求位置ID: " + requiredLocationId);
 
         // 3. 比较 ID
+        Log.d("LocationReceiver", "[checkLocationBeforeGallery] Comparing: required='" + requiredLocationId + "' vs current='" + currentCumId + "'"); // New Log
         if (!requiredLocationId.isEmpty() && requiredLocationId.equals(currentCumId)) {
             // 位置匹配，允许选择图片
+            Log.d("LocationReceiver", "[checkLocationBeforeGallery] Location MATCH. Opening gallery."); // New Log
             openVerificationGallery();
         } else {
             // 位置不匹配或无法获取当前位置
+            Log.d("LocationReceiver", "[checkLocationBeforeGallery] Location MISMATCH or currentCumId empty."); // New Log
             String message;
             if (currentCumId.isEmpty()) {
                 message = "无法确认当前位置，请确保您已进入教学楼区域并等待片刻。任务地点：" + currentVerificationTask.location + " (" + requiredLocationId + ")";
@@ -4130,6 +4148,7 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
      */
     public void moveToNextAgentStage() {
         currentAgentStage++;
+        Log.d("ActivitySelection", "[moveToNextAgentStage] Incremented currentAgentStage to: " + currentAgentStage); // Add Log
         if (currentAgentStage > 3) {
             // 所有阶段已完成
             ChatMessage completionMessage = new ChatMessage();
@@ -4142,12 +4161,23 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
             chatAdapter.addMessage(completionMessage);
             saveChatMessageToDatabase(completionMessage);
 
-            // 重置阶段
+            // 重置阶段并保存
             currentAgentStage = 1;
-            return;
+            Log.d("ActivitySelection", "[moveToNextAgentStage] All stages complete. Resetting currentAgentStage to: " + currentAgentStage);
+        } else {
+            // 正常进入下一阶段
+            Log.d("ActivitySelection", "[moveToNextAgentStage] Moving to stage: " + currentAgentStage);
         }
 
-        // 生成下一阶段任务
+        // --- Save updated Agent Stage to SharedPreferences ---
+        SharedPreferences agentPrefs = getSharedPreferences(AGENT_PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = agentPrefs.edit();
+        editor.putInt(KEY_AGENT_CURRENT_STAGE, currentAgentStage);
+        editor.apply();
+        Log.d("ActivitySelection", "[moveToNextAgentStage] Saved currentAgentStage (" + currentAgentStage + ") to prefs.");
+        // --- End Saving Agent Stage ---
+
+        // 生成下一阶段任务 (即使是重置也要生成阶段1任务)
         generateNewAgentTask();
     }
 
@@ -4220,19 +4250,21 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
                     if (bundle != null) {
                         int status = bundle.getInt(GeoFence.BUNDLE_KEY_FENCESTATUS);
                         String customId = bundle.getString(GeoFence.BUNDLE_KEY_CUSTOMID);
-                        
+                        Log.d("LocationReceiver", "[onReceive] Received broadcast - Status: " + status + ", CustomID: " + customId); // New Log
+
                         // 保存当前位置ID到SharedPreferences
                         if (status == GeoFence.STATUS_IN || status == GeoFence.STATUS_STAYED) {
                             SharedPreferences.Editor editor = getSharedPreferences("location_prefs", MODE_PRIVATE).edit();
                             editor.putString("current_cum_id", customId);
                             editor.apply();
-                            Log.d("LocationReceiver", "更新当前位置ID: " + customId);
+                            Log.d("LocationReceiver", "[onReceive] Saved current_cum_id: " + customId); // Modified Log
                         } else if (status == GeoFence.STATUS_OUT) {
                             // 当用户离开围栏时，清除当前位置ID
                             SharedPreferences.Editor editor = getSharedPreferences("location_prefs", MODE_PRIVATE).edit();
+                            String currentSavedId = getSharedPreferences("location_prefs", MODE_PRIVATE).getString("current_cum_id", ""); // Read before removing
                             editor.remove("current_cum_id");
                             editor.apply();
-                            Log.d("LocationReceiver", "用户离开围栏，清除位置ID");
+                            Log.d("LocationReceiver", "[onReceive] User left fence (" + customId + "). Removed current_cum_id (was: " + currentSavedId + ")"); // Modified Log
                         }
                     }
                 }
