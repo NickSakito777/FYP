@@ -6,9 +6,15 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 或 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- 获取访问手机振动器权限，用于导航过程中的震动提示 -->
@@ -29,8 +35,7 @@
     <!-- 手机信息 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- ************************************* -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <!-- 在SD卡中创建文件与删除文件权限 -->
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
@@ -62,6 +67,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
 
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 
     <application
         android:name=".map.BaiduInitialization"
@@ -73,6 +79,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LBSDemo"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="31">
 
         <!-- 注册 LoginActivity 作为启动 Activity -->
@@ -124,18 +131,43 @@
             android:enabled="true"
             android:exported="false"
             android:process=":remote" />
+        <!-- 在 AndroidManifest.xml 中添加 -->
+        <service
+            android:name=".task.TaskGenerationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
 
         <activity android:name=".navigation.WNaviGuideActivity" />
 
+        <!-- 添加WebViewActivity -->
+        <activity
+            android:name=".activity.WebViewActivity"
+            android:label="西浦码"
+            android:parentActivityName=".activity.ProfileActivity" />
+
+        <!-- 添加FileProvider配置 -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.lbsdemo.fileprovider" 
+            android:authorities="com.example.lbsdemo.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" /> 
+                android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- 添加特工任务活动 -->
+        <activity
+            android:name=".activity.AgentTaskActivity"
+            android:exported="false"
+            android:label="特工任务" />
+
+        <!-- 添加任务计时器活动 -->
+        <activity
+            android:name=".activity.TaskTimerActivity"
+            android:exported="false"
+            android:label="任务计时" />
 
     </application>
 

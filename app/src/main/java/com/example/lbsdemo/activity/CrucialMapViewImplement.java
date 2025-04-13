@@ -898,30 +898,24 @@ public class CrucialMapViewImplement extends AppCompatActivity implements Sensor
     }
     //悬浮窗实现
     private void showFloatWindow() {
-        locationInfo.postDelayed(new Runnable() {
+        locationInfo.postDelayed(() -> FloatWindowManager.get().showToolView(String.valueOf(CrucialMapViewImplement.class.hashCode()), new View.OnClickListener() {
             @Override
-            public void run() {
-
-                FloatWindowManager.get().showToolView(String.valueOf(CrucialMapViewImplement.class.hashCode()), new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startActivity(new Intent(CrucialMapViewImplement.this,CartoonMapView.class));
-                        finish();
-                    }
-                });
+            public void onClick(View v) {
+                startActivity(new Intent(CrucialMapViewImplement.this,CartoonMapView.class));
+                finish();
             }
-        }, 1000);//晚一秒实现，先等onCreate的都跑完再跑，不然会出现不显示的问题。
+        }), 3000);//晚一秒实现，先等onCreate的都跑完再跑，不然会出现不显示的问题。
     }
     // 在showFloatWindow方法后添加新悬浮窗逻辑
     private void showToolFloatWindow() {
-//        FloatWindowManager.get().showToolView("NAV_TOOL_" + this.hashCode(), new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(CrucialMapViewImplement.this, CartoonMapView.class);
-//                startActivity(intent);
-//                FloatWindowManager.get().hindToolView("NAV_TOOL_" + CrucialMapViewImplement.this.hashCode());
-//            }
-//        });
+        FloatWindowManager.get().showToolView("NAV_TOOL_" + this.hashCode(), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CrucialMapViewImplement.this, CartoonMapView.class);
+                startActivity(intent);
+                FloatWindowManager.get().hindToolView("NAV_TOOL_" + CrucialMapViewImplement.this.hashCode());
+            }
+        });
     }
 
 
@@ -1456,7 +1450,7 @@ public class CrucialMapViewImplement extends AppCompatActivity implements Sensor
         super.onResume();
 //        if (Settings.canDrawOverlays(this)) {
             showFloatWindow();
-            showToolFloatWindow();
+            showToolFloatWindow(); // 新悬浮窗
 //        }
 
     }

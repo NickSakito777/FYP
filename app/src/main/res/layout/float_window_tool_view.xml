@@ -7,8 +7,9 @@
 
     <ImageView
         android:id="@+id/iv_circle_map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="200px"
+        android:src="@mipmap/cartoonmapicon"
+        android:layout_height="200px"
         android:scaleType="centerCrop" />
 
 </FrameLayout>
