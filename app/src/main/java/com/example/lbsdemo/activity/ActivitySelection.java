@@ -1126,43 +1126,51 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
      * @param userId 用户ID
      */
     private void loadChatHistory(String userId) {
+        // 显示加载指示器
         if (chatLoadingIndicator != null) {
-            // chatLoadingIndicator.setVisibility(View.VISIBLE); // 不再显示加载转盘
+            chatLoadingIndicator.setVisibility(View.VISIBLE);
         }
 
-        // 使用Room数据库异步加载聊天记录
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            AppDatabase dbInstance = AppDatabase.getInstance(getApplicationContext());
-            if (dbInstance == null) {
-                 Log.e("ActivitySelection", "[loadChatHistory] Database instance is null!");
-                 return;
+        AppDatabase dbInstance = AppDatabase.getInstance(this);
+        if (dbInstance == null) {
+            Log.e("ActivitySelection", "[loadChatHistory] Database instance is null!");
+            // 隐藏加载指示器
+            if (chatLoadingIndicator != null) {
+                chatLoadingIndicator.setVisibility(View.GONE);
             }
+            return;
+        }
+
+        // 使用后台线程加载历史记录
+        AppDatabase.databaseWriteExecutor.execute(() -> {
             List<ChatMessage> messages = dbInstance.chatMessageDao().getRecentMessagesByUserId(userId, 50);
 
+            // 回到主线程更新UI
             runOnUiThread(() -> {
                 if (chatAdapter != null) {
-                    chatAdapter.clearMessages(); 
+                    chatAdapter.clearMessages();
 
                     // Add historical messages
                     for (ChatMessage message : messages) {
                         chatAdapter.addMessage(message);
                     }
 
-                    // Check and add completion messages if needed
+                    // Check and add completion messages if needed (移到后台执行)
                     if (taskIdToShowCompletionMessages != -1) {
-                        addCompletionMessagesToChat(taskIdToShowCompletionMessages);
-                        taskIdToShowCompletionMessages = -1; // Reset after adding
+                        // 将添加完成消息的操作也移到后台
+                        addCompletionMessagesToChatInBackground(taskIdToShowCompletionMessages);
+                        taskIdToShowCompletionMessages = -1; // Reset after initiating background task
+                    } else {
+                        // Add welcome message only if no history and no completion messages are pending
+                        if (chatAdapter.getItemCount() == 0) {
+                            ChatMessage welcomeMessage = new ChatMessage(userId, "assistant", "传讯已建立，双面镜已唤醒，密探暗影。这里是信使Zero。霍格沃兹我们需要您协助调查校园内的黑雾组织活动。请随时准备接收密令。");
+                            welcomeMessage.senderName = "特工Zero";
+                            chatAdapter.addMessage(welcomeMessage);
+                            saveChatMessageToDatabase(welcomeMessage);
+                        }
                     }
 
-                    // Add welcome message if no history and no completion messages were just added
-                    if (chatAdapter.getItemCount() == 0) { 
-                        ChatMessage welcomeMessage = new ChatMessage(userId, "assistant", "传讯已建立，双面镜已唤醒，密探暗影。这里是信使Zero。霍格沃兹我们需要您协助调查校园内的黑雾组织活动。请随时准备接收密令。");
-                        welcomeMessage.senderName = "特工Zero";
-                        chatAdapter.addMessage(welcomeMessage);
-                        saveChatMessageToDatabase(welcomeMessage);
-                    }
-
-                    // Scroll to bottom after all messages are potentially added
+                    // Scroll to bottom after initial history is loaded (completion messages might come later)
                     if (chatAdapter.getItemCount() > 0) {
                         scrollChatToBottom(false);
                     }
@@ -4297,4 +4305,75 @@ public class ActivitySelection extends AppCompatActivity implements GeoFenceMana
         }
     }
     // --- End Create addCompletionMessagesToChat --- 
+
+    // --- 4. Create addCompletionMessagesToChat --- 
+    // 原来的方法，现在只负责在主线程添加消息
+    private void addCompletionMessagesToChatUI(TaskData task) {
+        Log.d("ActivitySelection", "[addCompletionMessagesToChatUI] Adding messages for taskId: " + task.id);
+
+        // Add system message
+        ChatMessage systemMessage = new ChatMessage();
+        systemMessage.userId = userId;
+        systemMessage.role = "system";
+        systemMessage.content = "任务已完成: " + task.title;
+        systemMessage.messageType = "system";
+        systemMessage.timestamp = System.currentTimeMillis();
+        chatAdapter.addMessage(systemMessage);
+        saveChatMessageToDatabase(systemMessage);
+
+        // Add agent message
+        ChatMessage agentMessage = new ChatMessage();
+        agentMessage.userId = userId;
+        agentMessage.role = "assistant";
+        agentMessage.content = "做得好，夜鸦！你成功完成了密令，守护了霍格沃兹。" + generateRandomCompliment();
+        agentMessage.senderName = "Zero"; // Assuming Zero for agent tasks
+        agentMessage.timestamp = System.currentTimeMillis();
+        chatAdapter.addMessage(agentMessage);
+        saveChatMessageToDatabase(agentMessage);
+
+        // Add next stage message/button if applicable
+        if (isLastTaskInStage(task)) { 
+            ChatMessage nextStageMessage = new ChatMessage();
+            nextStageMessage.userId = userId;
+            nextStageMessage.role = "assistant";
+            nextStageMessage.content = "所有阶段任务已完成。准备好接受下一阶段的挑战了吗？";
+            nextStageMessage.senderName = "信使Zero"; 
+            nextStageMessage.timestamp = System.currentTimeMillis();
+            chatAdapter.addMessage(nextStageMessage);
+            saveChatMessageToDatabase(nextStageMessage);
+
+            ChatMessage buttonMessage = new ChatMessage();
+            buttonMessage.userId = userId;
+            buttonMessage.role = "system";
+            buttonMessage.content = "";
+            buttonMessage.messageType = "next_stage_button";
+            buttonMessage.timestamp = System.currentTimeMillis();
+            chatAdapter.addMessage(buttonMessage);
+            saveChatMessageToDatabase(buttonMessage);
+        }
+
+        // 添加完消息后滚动到底部
+        scrollChatToBottom(); 
+    }
+
+    // 新增方法，在后台线程执行数据库查询，然后切换回主线程更新UI
+    private void addCompletionMessagesToChatInBackground(int taskId) {
+        AppDatabase database = AppDatabase.getInstance(getApplicationContext());
+        if (database == null) {
+            Log.e("ActivitySelection", "[addCompletionMessagesToChatInBackground] Database instance is null!");
+            return;
+        }
+
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            TaskData task = database.taskDao().getTaskById(taskId);
+            if (task == null) {
+                Log.e("ActivitySelection", "[addCompletionMessagesToChatInBackground] Cannot find task with ID " + taskId);
+                return;
+            }
+
+            // 获取到 TaskData 后，切换回主线程添加消息到UI
+            runOnUiThread(() -> addCompletionMessagesToChatUI(task));
+        });
+    }
+    // --- End Create addCompletionMessagesToChat ---
 }
