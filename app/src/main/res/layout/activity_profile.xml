@@ -23,8 +23,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:contentDescription="Profile Picture"
-        android:scaleType="centerCrop"/>
-<!--        android:src="@drawable/default_profile" -->
+        android:scaleType="centerCrop"
+        android:src="@drawable/student_profile"/>
 
     <!-- 学生信息布局 -->
 
@@ -33,7 +33,7 @@
     <LinearLayout
         android:id="@+id/studentInfoLayout"
         android:layout_width="164dp"
-        android:layout_height="92dp"
+        android:layout_height="wrap_content"
         android:layout_alignTop="@id/profileImage"
         android:layout_marginStart="18dp"
         android:layout_marginTop="44dp"
@@ -72,13 +72,13 @@
             android:id="@+id/btnXiluCode"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="16dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
+            android:background="@color/button_color"
             android:text="西浦码"
-            android:textSize="18sp"
             android:textColor="#FFFFFF"
-            android:background="?attr/colorPrimary" />
+            android:textSize="18sp" />
     </LinearLayout>
 
     <ImageView
