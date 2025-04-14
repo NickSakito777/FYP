@@ -357,7 +357,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             } else {
                 // AI助手消息 - 靠左显示，白色背景
                 messageCard.setCardBackgroundColor(itemView.getContext().getResources().getColor(R.color.assistant_message_background));
-                tvSender.setText("AI助手");
+                tvSender.setText("信使");
                 tvSender.setTextColor(itemView.getContext().getResources().getColor(android.R.color.holo_blue_dark));
                 tvContent.setTextColor(itemView.getContext().getResources().getColor(android.R.color.black));
                 tvTimestamp.setTextColor(itemView.getContext().getResources().getColor(android.R.color.darker_gray));

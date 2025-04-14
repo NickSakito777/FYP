@@ -59,7 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_weight="1"
-        android:text="活动列表"
+        android:text="行动列表"
         android:backgroundTint="@color/button_color"
         android:elevation="4dp" />
 

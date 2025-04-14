@@ -31,7 +31,7 @@
                 android:id="@+id/tv_agent_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="特工Zero"
+                android:text="信使Zero"
                 android:textStyle="bold"
                 android:textColor="#3F51B5"
                 android:textSize="16sp" />

@@ -18,7 +18,7 @@
             android:id="@+id/tv_card_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="特工任务"
+            android:text="信使任务"
             android:textStyle="bold"
             android:textColor="#3F51B5"
             android:textSize="18sp"

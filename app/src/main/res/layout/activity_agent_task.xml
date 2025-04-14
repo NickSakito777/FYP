@@ -26,7 +26,7 @@
                 android:id="@+id/img_agent_avatar"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:src="@drawable/ic_launcher_foreground"
+                android:src="@drawable/agentmagic"
                 android:contentDescription="特工头像" />
 
             <LinearLayout
@@ -38,7 +38,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="特工Zero"
+                    android:text="信使Zero"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -46,7 +46,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="秘密特工组织"
+                    android:text="凤凰社"
                     android:textSize="14sp" />
 
                 <TextView
