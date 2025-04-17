@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <item name="action_refresh" type="id" />
-    <item name="action_test_photo" type="id" />
-    <item name="action_agent_task" type="id" />
-</resources> 
